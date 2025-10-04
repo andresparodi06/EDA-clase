@@ -1,6 +1,3 @@
-#from io import BytesIO
-#import requests
-#from ucimlrepo import fetch_ucirepo 
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -15,15 +12,9 @@ from sklearn.metrics import classification_report, confusion_matrix
 import scipy.stats as stats
 import pickle
 
-# -----------------------------
-# Config
-# -----------------------------
-
 st.set_page_config(page_title="EDA Cancer",
                    page_icon="📊",
                    layout="wide")
-#📈
-#🔎
 
 # -----------------------------
 # Datos
@@ -38,16 +29,14 @@ y = datos["diagnosis"]
 df = pd.DataFrame(X, columns=feature_names)
 df["Diagnóstico"] = y.map({"M": "Maligno", "B": "Benigno"})
 
-
-
 # Título y descripción
 st.title("Análisis Exploratorio de Datos - Breast Cancer (Wisconsin)")
 
-#st.markdown("""
-#        Este análisis permite explorar las características más relevantes del dataset Breast Cancer Wisconsin Diagnostic, 
-#        proporcionando visualizaciones y estadísticas descriptivas para facilitar la comprensión del comportamiento de cada variable 
-#        según el diagnóstico.
-#    """)
+st.markdown("""
+        Este análisis permite explorar las características más relevantes del dataset Breast Cancer Wisconsin Diagnostic, 
+        proporcionando visualizaciones y estadísticas descriptivas para facilitar la comprensión del comportamiento de cada variable 
+        según el diagnóstico.
+    """)
 
 st.markdown("""
     <div style="text-align: justify;">
@@ -56,7 +45,6 @@ st.markdown("""
         según el diagnóstico.
     </div>
     """, unsafe_allow_html=True)
-
 
 st.subheader("Primeras filas del dataset")
 st.dataframe(df.head(6))
@@ -343,9 +331,7 @@ A continuación, puedes seleccionar un conjunto de variables para construir un m
 </div>
 """, unsafe_allow_html=True)
 
-
 variables_por_defecto = ["radius_mean", "perimeter_mean", "area_mean", "concavity_mean"]
-
 # Mostrar multiselect con preselección
 variables_predictoras = st.multiselect(
     "",
@@ -403,3 +389,60 @@ st.markdown("""
 ---
 """)
 
+st.title("🩺 Predicción de Cáncer de Mama cargando un modelo Pickle")
+
+# =====================
+# Carga del pickle
+# =====================
+
+with open("modelo_cancer.pkl", "rb") as archivos:
+    data = pickle.load(archivos)
+
+modelo = data["modelo"]
+features = data["features"]
+
+st.write("Introduce los valores de las características:")
+
+
+# =====================
+# Crear inputs con valores por defecto en la media
+# =====================
+
+medias = datos.drop(columns=["id", "diagnosis"]).mean()
+
+entrada_usuario = {}
+for col in features:
+    entrada_usuario[col] = st.number_input(
+        f"{col}",
+        value=float(medias[col]),   # valor medio por defecto
+        format="%.4f"
+    )
+
+# =====================
+# Predicción
+# =====================
+if st.button("Predecir"):
+    X_new = pd.DataFrame([entrada_usuario], columns=features)
+    pred = modelo.predict(X_new)[0]
+    proba_benigno = modelo.predict_proba(X_new)[0][0]  # solo probabilidad de Benigno
+
+    # Asignar color según el nivel de probabilidad
+    if proba_benigno >= 0.75:
+        color = "green"
+    elif proba_benigno >= 0.50:
+        color = "orange"
+    else:
+        color = "red"
+
+    # Mostrar resultado con colores
+    st.subheader("Resultado de la Predicción")
+    st.markdown(
+        f"""
+        <div style="padding:15px; border-radius:10px; background-color:{color}; text-align:center; color:white; font-size:20px;">
+            🔎 El tumor es: <strong>{pred}</strong><br>
+            Probabilidad Benigno: {proba_benigno:.2f}
+        </div>
+        """,
+        unsafe_allow_html=True
+
+    )
