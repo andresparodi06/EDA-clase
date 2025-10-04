@@ -318,3 +318,16 @@ El siguiente mapa de calor representa las correlaciones entre las variables del 
 
 ---
 """)
+
+# =====================
+# Modelo interno
+# =====================
+
+
+st.title("🧮 Prediccion del tipo de tumor - Entrenado al incluir variables")
+
+st.markdown("""
+<div style="text-align: justify;">
+A continuación, puedes seleccionar un conjunto de variables para construir un modelo de regresión logística, por defecto se seleccionara la media del area, perimetro, concavidad y radio pero puedes eliminarlas o seleccionar mas variables. Una vez entrenado, podrás realizar predicciones de diagnóstico sobre nuevos datos ingresados manualmente.
+</div>
+""", unsafe_allow_html=True)
